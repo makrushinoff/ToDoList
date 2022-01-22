@@ -31,7 +31,7 @@ public class NoteController {
         return noteRepository.findAll();
     }
 
-    @GetMapping
+    @GetMapping("/{id}")
     public Note getNoteById(@PathVariable Long id) {
         return noteRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Can not find note with such id"));
