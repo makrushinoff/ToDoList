@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,98 +21,123 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NoteControllerTest {
 
-    private static final Long ID = 1L;
-    private static final String LABEL = "label";
+	private static final Long ID = 1L;
+	private static final String LABEL = "label";
 
-    @Mock
-    private NoteRepository noteRepository;
+	@Mock
+	private NoteRepository noteRepository;
 
-    @InjectMocks
-    private NoteController testInstance;
+	@InjectMocks
+	private NoteController testInstance;
 
-    @Test
-    void shouldGetNoteById_success() {
-        Note note = this.note();
+	@Test
+	void shouldGetUnfinishedNotes_returnAll() {
+		List<Note> allNotes = List.of(this.note(ID, false), this.note(ID + 1, false));
 
-        when(noteRepository.findById(ID))
-                .thenReturn(Optional.of(note));
+		when(noteRepository.findAll())
+			.thenReturn(allNotes);
 
-        Note actual = testInstance.getNoteById(ID);
+		List<Note> actual = testInstance.getNotFinishedNotes();
 
-        assertEquals(note, actual);
-    }
+		assertEquals(allNotes, actual);
+	}
 
-    @Test
-    void shouldGetNoteById_fail_notFoundById() {
-        when(noteRepository.findById(ID))
-                .thenReturn(Optional.empty());
+	@Test
+	void shouldGetUnfinishedNotes_returnEmpty() {
+		List<Note> allNotes = List.of(this.note(ID, true), this.note(ID + 1, true));
 
-        assertThrows(NotFoundException.class,
-                () -> testInstance.getNoteById(ID));
-    }
+		when(noteRepository.findAll())
+			.thenReturn(allNotes);
 
-    @Test
-    void shouldCreateNote() {
-        Note note = this.note();
+		List<Note> actual = testInstance.getNotFinishedNotes();
 
-        testInstance.createNote(note);
+		assertTrue(actual.isEmpty());
+	}
 
-        verify(noteRepository).save(note);
-    }
+	@Test
+	void shouldGetNoteById_success() {
+		Note note = this.note(ID, true);
 
-    @Test
-    void shouldUpdateNote_success() {
-        Note note = this.note();
+		when(noteRepository.findById(ID))
+			.thenReturn(Optional.of(note));
 
-        when(noteRepository.existsById(ID))
-                .thenReturn(true);
-        when(noteRepository.save(note))
-                .thenReturn(note);
+		Note actual = testInstance.getNoteById(ID);
 
-        Note actual = testInstance.updateNote(ID, note);
+		assertEquals(note, actual);
+	}
 
-        assertEquals(note, actual);
-    }
+	@Test
+	void shouldGetNoteById_fail_notFoundById() {
+		when(noteRepository.findById(ID))
+			.thenReturn(Optional.empty());
 
-    @Test
-    void shouldUpdateNote_fail_notFoundById() {
-        Note note = this.note();
+		assertThrows(NotFoundException.class,
+			() -> testInstance.getNoteById(ID));
+	}
 
-        when(noteRepository.existsById(ID))
-                .thenReturn(false);
+	@Test
+	void shouldCreateNote() {
+		Note note = this.note(ID, true);
 
-        assertThrows(NotFoundException.class,
-                () -> testInstance.updateNote(ID, note));
+		testInstance.createNote(note);
 
-        verify(noteRepository, never()).save(any(Note.class));
-    }
+		verify(noteRepository).save(note);
+	}
 
-    @Test
-    void shouldDeleteNoteById_success() {
-        when(noteRepository.existsById(ID))
-                .thenReturn(true);
+	@Test
+	void shouldUpdateNote_success() {
+		Note note = this.note(ID, true);
 
-        testInstance.deleteNoteById(ID);
+		when(noteRepository.existsById(ID))
+			.thenReturn(true);
+		when(noteRepository.save(note))
+			.thenReturn(note);
 
-        verify(noteRepository).deleteById(ID);
-    }
+		Note actual = testInstance.updateNote(ID, note);
 
-    @Test
-    void shouldDeleteNoteById_fail_notFoundById() {
-        when(noteRepository.existsById(ID))
-                .thenReturn(false);
+		assertEquals(note, actual);
+	}
 
-        assertThrows(NotFoundException.class,
-                () -> testInstance.deleteNoteById(ID));
+	@Test
+	void shouldUpdateNote_fail_notFoundById() {
+		Note note = this.note(ID, true);
 
-        verify(noteRepository, never()).deleteById(ID);
-    }
+		when(noteRepository.existsById(ID))
+			.thenReturn(false);
 
-    private Note note() {
-        return Note.builder()
-                .done(true)
-                .label(LABEL)
-                .important(true)
-                .build();
-    }
+		assertThrows(NotFoundException.class,
+			() -> testInstance.updateNote(ID, note));
+
+		verify(noteRepository, never()).save(any(Note.class));
+	}
+
+	@Test
+	void shouldDeleteNoteById_success() {
+		when(noteRepository.existsById(ID))
+			.thenReturn(true);
+
+		testInstance.deleteNoteById(ID);
+
+		verify(noteRepository).deleteById(ID);
+	}
+
+	@Test
+	void shouldDeleteNoteById_fail_notFoundById() {
+		when(noteRepository.existsById(ID))
+			.thenReturn(false);
+
+		assertThrows(NotFoundException.class,
+			() -> testInstance.deleteNoteById(ID));
+
+		verify(noteRepository, never()).deleteById(ID);
+	}
+
+	private Note note(Long id, boolean isDone) {
+		return Note.builder()
+			.id(id)
+			.done(isDone)
+			.label(LABEL)
+			.important(true)
+			.build();
+	}
 }

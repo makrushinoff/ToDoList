@@ -1,6 +1,7 @@
 package com.example.todolist.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,41 +25,44 @@ import com.example.todolist.repository.NoteRepository;
 @RequiredArgsConstructor
 public class NoteController {
 
-    private final NoteRepository noteRepository;
+	private final NoteRepository noteRepository;
 
-    @GetMapping
-    public List<Note> getAllNotes() {
-        return noteRepository.findAll();
-    }
+	@GetMapping
+	public List<Note> getNotFinishedNotes() {
+		List<Note> all = noteRepository.findAll();
+		return all.stream()
+			.filter(note -> !note.isDone())
+			.toList();
+	}
 
-    @GetMapping("/{id}")
-    public Note getNoteById(@PathVariable Long id) {
-        return noteRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Can not find note with such id"));
-    }
+	@GetMapping("/{id}")
+	public Note getNoteById(@PathVariable Long id) {
+		return noteRepository.findById(id)
+			.orElseThrow(() -> new NotFoundException("Can not find note with such id"));
+	}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public void createNote(@RequestBody Note note) {
-        noteRepository.save(note);
-    }
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public void createNote(@RequestBody Note note) {
+		noteRepository.save(note);
+	}
 
-    @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Note updateNote(@PathVariable Long id, @RequestBody Note note) {
-        if(!noteRepository.existsById(id)) {
-            throw new NotFoundException("Can not find note with such id");
-        }
-        return noteRepository.save(note);
-    }
+	@PutMapping("/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	public Note updateNote(@PathVariable Long id, @RequestBody Note note) {
+		if (!noteRepository.existsById(id)) {
+			throw new NotFoundException("Can not find note with such id");
+		}
+		return noteRepository.save(note);
+	}
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNoteById(@PathVariable Long id) {
-        if(!noteRepository.existsById(id)) {
-            throw new NotFoundException("Can not find note with such id");
-        }
-        noteRepository.deleteById(id);
-    }
+	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteNoteById(@PathVariable Long id) {
+		if (!noteRepository.existsById(id)) {
+			throw new NotFoundException("Can not find note with such id");
+		}
+		noteRepository.deleteById(id);
+	}
 
 }
