@@ -54,7 +54,10 @@ public class NoteController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void createNote(@PathVariable Long id) {
+    public void deleteNoteById(@PathVariable Long id) {
+        if(!noteRepository.existsById(id)) {
+            throw new NotFoundException("Can not find note with such id");
+        }
         noteRepository.deleteById(id);
     }
 

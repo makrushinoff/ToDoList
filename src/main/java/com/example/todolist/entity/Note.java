@@ -7,11 +7,18 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "note")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@NotNull
+@Builder
 public class Note {
 
     @Id
